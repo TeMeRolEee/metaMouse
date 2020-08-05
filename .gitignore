@@ -1,3 +1,9 @@
+#Clion cmake-build-directories
+cmake-build-*/**
+
+#Clion directory
+.idea/**
+
 # Prerequisites
 *.d
 
