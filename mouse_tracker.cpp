@@ -13,11 +13,11 @@ void MouseTracker::watchMouse_slot() {
 void MouseTracker::startWatching_slot() {
 	timer = new QTimer();
 	timer->setTimerType(Qt::TimerType::PreciseTimer);
-	timer->setInterval(100);
+	timer->setInterval(10);
 
 	connect(timer, &QTimer::timeout, this, &MouseTracker::watchMouse_slot);
 
-	timer->start(10);
+	timer->start();
 }
 
 MouseTracker::~MouseTracker() {
