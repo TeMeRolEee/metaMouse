@@ -8,12 +8,12 @@ class MouseTracker : public QThread {
 
 	public:
 		explicit MouseTracker(QObject *parent = nullptr);
-
-	protected:
-	void run() override;
+		~MouseTracker() override;
 
 	public slots:
 		void watchMouse_slot();
+
+	public slots:
 		void startWatching_slot();
 
 	signals:

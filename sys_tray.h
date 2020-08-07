@@ -66,8 +66,6 @@ class SysTray : public QDialog {
 		QMenu *trayIconMenu;
 
 		MouseTracker *mouseTracker = nullptr;
-		QThread *thread = nullptr;
-
 };
 
 

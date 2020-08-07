@@ -3,26 +3,27 @@
 #include <QCursor>
 #include <QDebug>
 
-MouseTracker::MouseTracker(QObject *parent) : QThread(parent) {
-	timer = new QTimer();
-	//timer->setTimerType(Qt::TimerType::PreciseTimer);
-	timer->setInterval(10);
-	connect(timer, &QTimer::timeout, this, &MouseTracker::watchMouse_slot);
-	connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
-	connect(timer, &QTimer::timeout, this, &MouseTracker::startWatching_slot);
-}
+MouseTracker::MouseTracker(QObject *parent) : QThread(parent)
+{}
 
 void MouseTracker::watchMouse_slot() {
-	qDebug() << timer->remainingTime();
-	qDebug() << QCursor::pos();
+	qInfo() << QCursor::pos();
 }
 
 void MouseTracker::startWatching_slot() {
-	qDebug() << "RUN" << MouseTracker::currentThreadId();
-	timer->start(100);
+	timer = new QTimer();
+	timer->setTimerType(Qt::TimerType::PreciseTimer);
+	timer->setInterval(100);
+
+	connect(timer, &QTimer::timeout, this, &MouseTracker::watchMouse_slot);
+
+	timer->start(10);
 }
 
-void MouseTracker::run() {
+MouseTracker::~MouseTracker() {
+	if (timer->isActive()) {
+		timer->stop();
+	}
 
-	QThread::run();
+	delete timer;
 }

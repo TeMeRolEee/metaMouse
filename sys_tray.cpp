@@ -1,7 +1,6 @@
 #include "sys_tray.h"
 
 
-#include <QDebug>
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
@@ -18,15 +17,13 @@
 #include <QMessageBox>
 
 SysTray::SysTray() {
-	thread = new QThread();
 	mouseTracker = new MouseTracker();
 
-	connect(mouseTracker, &QThread::started, mouseTracker, &MouseTracker::startWatching_slot);
-	connect(mouseTracker, &QThread::finished, mouseTracker, &MouseTracker::deleteLater);
+	connect(mouseTracker, &MouseTracker::started, mouseTracker, &MouseTracker::watchMouse_signal);
+	connect(mouseTracker, &MouseTracker::watchMouse_signal, mouseTracker, &MouseTracker::startWatching_slot);
+	connect(mouseTracker, &MouseTracker::finished, mouseTracker, &MouseTracker::deleteLater);
 
-	mouseTracker->moveToThread(thread);
 	mouseTracker->start(QThread::HighPriority);
-	thread->start();
 
 	setMouseTracking(true);
 	installEventFilter(this);
@@ -216,4 +213,3 @@ void SysTray::createTrayIcon() {
 	trayIcon = new QSystemTrayIcon(this);
 	trayIcon->setContextMenu(trayIconMenu);
 }
-
