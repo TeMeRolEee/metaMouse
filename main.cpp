@@ -28,12 +28,6 @@ int main(int argc, char *argv[]) {
 
 	QApplication::setQuitOnLastWindowClosed(false);
 
-//	for (auto screen : QApplication::screens()) {
-//		qDebug() << "Available size" << screen->availableSize() << "Size" << screen->size() << "Hz:" << screen->refreshRate();
-//		QPoint pos0 = QCursor::pos(screen);
-//		qDebug() << "X" << pos0.x() << "\tY" << pos0.y();
-//	}
-
 	SysTray mouseTracker;
 	mouseTracker.show();
 
