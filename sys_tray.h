@@ -7,15 +7,7 @@
 
 QT_BEGIN_NAMESPACE
 class QAction;
-class QCheckBox;
-class QComboBox;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
 class QMenu;
-class QPushButton;
-class QSpinBox;
-class QTextEdit;
 QT_END_NAMESPACE
 
 class SysTray : public QDialog {
