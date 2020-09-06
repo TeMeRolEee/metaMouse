@@ -12,6 +12,7 @@ SysTray::SysTray() {
 	connect(mouseTracker, &MouseTracker::started, mouseTracker, &MouseTracker::watchMouse_signal);
 	connect(mouseTracker, &MouseTracker::watchMouse_signal, mouseTracker, &MouseTracker::startWatching_slot);
 	connect(mouseTracker, &MouseTracker::finished, mouseTracker, &MouseTracker::deleteLater);
+	connect(this, &SysTray::handleScreenChange_signal, mouseTracker, &MouseTracker::handleScreenChange_signal);
 	connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
 	mouseTracker->start(QThread::HighPriority);
@@ -33,3 +34,4 @@ void SysTray::createTrayIcon() {
 	trayIconMenu->addAction(quitAction);
 	trayIcon->setContextMenu(trayIconMenu);
 }
+

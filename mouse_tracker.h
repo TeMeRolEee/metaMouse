@@ -1,7 +1,9 @@
 #pragma once
 
 #include <QThread>
+#include <QVector>
 #include <QtCore/QTimer>
+#include <QtGui/QScreen>
 
 class MouseTracker : public QThread {
 	Q_OBJECT
@@ -12,15 +14,22 @@ class MouseTracker : public QThread {
 
 	public slots:
 		void watchMouse_slot();
-
-	public slots:
 		void startWatching_slot();
+		void handleCriticalCursorPosition_slot(const QPoint cursorPos, int screenID);
+		void handleScreenChanges_slot();
 
 	signals:
 		void watchMouse_signal();
+		void handleScreenChange_signal();
+		void criticalCursorPosition_signal(const QPoint &cursorPos, int screenID);
 
 	private:
+		bool isAtScreenEdge(const QPoint &position);
+		bool cursorPosToRelative(const QPoint &globalPos, QPoint &resultPos, int *screenID = nullptr);
+
 		QTimer *timer = nullptr;
+		QVector<QScreen*> screens;
+		std::mutex screensMutex;
 };
 
 

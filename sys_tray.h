@@ -23,6 +23,9 @@ class SysTray : public QDialog {
 		QMenu *trayIconMenu = nullptr;
 		QAction *quitAction = nullptr;
 		MouseTracker *mouseTracker = nullptr;
+
+	signals:
+		void handleScreenChange_signal(QScreen *screen);
 };
 
 
