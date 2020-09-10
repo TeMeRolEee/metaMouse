@@ -37,7 +37,7 @@ void MouseTracker::watchMouse_slot() {
 void MouseTracker::startWatching_slot() {
 	timer = new QTimer();
 	timer->setTimerType(Qt::TimerType::PreciseTimer);
-	timer->setInterval(5);
+	timer->setInterval(500);
 
 	connect(timer, &QTimer::timeout, this, &MouseTracker::watchMouse_slot);
 
@@ -56,13 +56,16 @@ void MouseTracker::handleScreenChanges_slot() {
 void MouseTracker::handleCriticalCursorPosition_slot(const QPoint cursorPos, int screenID) {
 	const std::lock_guard<std::mutex> lockGuard(screensMutex);
 
-	qreal yPos = ((qreal)cursorPos.y() / screens.at(screenID)->geometry().height());
-	qInfo() << cursorPos << screenID << screens.at(screenID)->geometry().height() << cursorPos.y() << yPos;
+	qreal yPos = ((qreal)cursorPos.y() / (screens.at(screenID)->geometry().height() - 1));
 
-	if (screenID != 0 && screenID < screens.size() && cursorPos.x() >= (screens.at(screenID)->geometry().width() / 2)) {
-		QCursor::setPos(screens.at(screenID + 1), 0, (int) (screens.at(screenID + 1)->geometry().height() * yPos));
-	} else if (screenID > 0 && cursorPos.x() <= (screens.at(screenID)->geometry().width() / 2)) {
-		QCursor::setPos(screens.at(screenID - 1), screens.at(screenID - 1)->geometry().x() - 1, (int) (screens.at(screenID - 1)->geometry().height() * yPos));
+	if (screenID != 0 && screenID < screens.size() - 1) {
+		if (cursorPos.x() >= (screens.at(screenID)->geometry().width() / 2)) {
+			QCursor::setPos(QCursor::pos().x() + 5, (int) (screens.at(screenID + 1)->geometry().height() * yPos));
+		}
+	} else if (screenID > 0 && cursorPos.x()) {
+		if (screens.at(screenID)->geometry().width() / 2) {
+			QCursor::setPos(QCursor::pos().x() - 5, (int) (screens.at(screenID - 1)->geometry().height() * yPos));
+		}
 	}
 }
 
@@ -72,7 +75,7 @@ bool MouseTracker::isAtScreenEdge(const QPoint &position) {
 
 	if (cursorPosToRelative(position, tempPos)) {
 		//qInfo() << width << tempPos.x();
-		if (width == tempPos.x() || tempPos.x() <= 3) {
+		if (width == tempPos.x() || tempPos.x() <= 2) {
 			return true;
 		}
 	}
