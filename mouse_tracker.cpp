@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QWidget>
 #include <QtMath>
-#include <QMutexLocker>
 
 MouseTracker::MouseTracker(QObject *parent) : QThread(parent)
 {
@@ -27,11 +26,8 @@ void MouseTracker::watchMouse_slot() {
 		QPoint relativePos;
 		int screenID = 0;
 		if (cursorPosToRelative(QCursor::pos(), relativePos, &screenID)) {
-//			qInfo() << "At edge";
 			emit handleCriticalCursorPosition_slot(relativePos, screenID);
 		}
-	} else {
-//		qInfo() << "Not at edge";
 	}
 }
 
@@ -61,8 +57,7 @@ void MouseTracker::handleScreenChanges_slot() {
 }
 
 void MouseTracker::handleCriticalCursorPosition_slot(const QPoint cursorPos, int screenID) {
-	qInfo() << coolDown->isActive() << mouseDrag;
-	if (coolDown->isActive() || mouseDrag) {
+	if (coolDown->isActive()) {
 		return;
 	}
 
@@ -120,25 +115,5 @@ bool MouseTracker::cursorPosToRelative(const QPoint &globalPos, QPoint &resultPo
 }
 
 void MouseTracker::handleCoolDown_slot() {
-	qInfo() << "CoolDown started";
 	coolDown->start();
 }
-
-//bool MouseTracker::eventFilter(QObject *watched, QEvent *event) {
-//	qInfo() << "eventFilter";
-//
-//	switch (event->type()) {
-//		case QEvent::MouseButtonPress: {
-//			const QMutexLocker lockGuard(&mouseDragMutex);
-//			mouseDrag = true;
-//			break;
-//		}
-//		case QEvent::UngrabMouse: {
-//			const QMutexLocker lockGuard(&mouseDragMutex);
-//			mouseDrag = false;
-//			break;
-//		}
-//	}
-//
-//	return QObject::eventFilter(watched, event);
-//}

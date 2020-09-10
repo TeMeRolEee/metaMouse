@@ -12,7 +12,6 @@ class MouseTracker : public QThread {
 	public:
 		explicit MouseTracker(QObject *parent = nullptr);
 		~MouseTracker() override;
-//		bool eventFilter(QObject *watched, QEvent *event) override;
 
 	public slots:
 		void watchMouse_slot();
@@ -35,8 +34,6 @@ class MouseTracker : public QThread {
 		QTimer *coolDown = nullptr;
 		QVector<QScreen*> screens;
 		QMutex screensMutex;
-		QMutex mouseDragMutex;
-		QBasicAtomicInteger<bool> mouseDrag = false;
 };
 
 
