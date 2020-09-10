@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QtMath>
+#include <QMutexLocker>
 
 MouseTracker::MouseTracker(QObject *parent) : QThread(parent)
 {
@@ -37,24 +38,35 @@ void MouseTracker::watchMouse_slot() {
 void MouseTracker::startWatching_slot() {
 	timer = new QTimer();
 	timer->setTimerType(Qt::TimerType::PreciseTimer);
-	timer->setInterval(500);
+	timer->setInterval(5);
+
+	coolDown = new QTimer();
+	coolDown->setTimerType(Qt::TimerType::PreciseTimer);
+	coolDown->setInterval(1000);
+	coolDown->setSingleShot(true);
 
 	connect(timer, &QTimer::timeout, this, &MouseTracker::watchMouse_slot);
+	connect(this, &MouseTracker::startCoolDown_signal, this, &MouseTracker::handleCoolDown_slot);
 
 	timer->start();
 }
 
 void MouseTracker::handleScreenChanges_slot() {
-	const std::lock_guard<std::mutex> lockGuard(screensMutex);
-
+	const QMutexLocker lockGuard(&screensMutex);
 	screens.clear();
+
 	for (auto tempScreen : QApplication::screens()) {
 		screens.push_back(tempScreen);
 	}
 }
 
 void MouseTracker::handleCriticalCursorPosition_slot(const QPoint cursorPos, int screenID) {
-	const std::lock_guard<std::mutex> lockGuard(screensMutex);
+	qInfo() << coolDown->isActive() << mouseDrag;
+	if (coolDown->isActive() || mouseDrag) {
+		return;
+	}
+
+	const QMutexLocker lockGuard(&screensMutex);
 
 	qreal yPos = ((qreal)cursorPos.y() / (screens.at(screenID)->geometry().height() - 1));
 
@@ -67,6 +79,8 @@ void MouseTracker::handleCriticalCursorPosition_slot(const QPoint cursorPos, int
 			QCursor::setPos(QCursor::pos().x() - 5, (int) (screens.at(screenID - 1)->geometry().height() * yPos));
 		}
 	}
+
+	emit startCoolDown_signal();
 }
 
 bool MouseTracker::isAtScreenEdge(const QPoint &position) {
@@ -74,7 +88,6 @@ bool MouseTracker::isAtScreenEdge(const QPoint &position) {
 	QPoint tempPos;
 
 	if (cursorPosToRelative(position, tempPos)) {
-		//qInfo() << width << tempPos.x();
 		if (width == tempPos.x() || tempPos.x() <= 2) {
 			return true;
 		}
@@ -89,7 +102,7 @@ bool MouseTracker::cursorPosToRelative(const QPoint &globalPos, QPoint &resultPo
 	}
 
 	{
-		const std::lock_guard<std::mutex> lockGuard(screensMutex);
+		const QMutexLocker lockGuard(&screensMutex);
 		*screenID = screens.indexOf(QApplication::screenAt(globalPos));
 		resultPos = globalPos;
 
@@ -101,9 +114,31 @@ bool MouseTracker::cursorPosToRelative(const QPoint &globalPos, QPoint &resultPo
 			resultPos.setX(qFabs(screens.at(currentScreenID)->size().width() - 1 - resultPos.x()));
 			resultPos.setY(qFabs(globalPos.y()));
 		}
-
-//		qInfo() << resultPos.x() << screens.at(*screenID)->size().width();
 	}
 
 	return true;
 }
+
+void MouseTracker::handleCoolDown_slot() {
+	qInfo() << "CoolDown started";
+	coolDown->start();
+}
+
+//bool MouseTracker::eventFilter(QObject *watched, QEvent *event) {
+//	qInfo() << "eventFilter";
+//
+//	switch (event->type()) {
+//		case QEvent::MouseButtonPress: {
+//			const QMutexLocker lockGuard(&mouseDragMutex);
+//			mouseDrag = true;
+//			break;
+//		}
+//		case QEvent::UngrabMouse: {
+//			const QMutexLocker lockGuard(&mouseDragMutex);
+//			mouseDrag = false;
+//			break;
+//		}
+//	}
+//
+//	return QObject::eventFilter(watched, event);
+//}
